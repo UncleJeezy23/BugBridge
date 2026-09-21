@@ -2,7 +2,7 @@
 
 BugBridge is a full-stack internal bug and product-feedback system built to reduce the friction between employees reporting software problems and QA/development teams investigating them.
 
-This branch is the **portfolio-safe demo**. It uses generic branding, synthetic data, and demo-only identities. It contains no customer data, employee data, internal URLs, credentials, or company-specific deployment details.
+This repository is a **portfolio-safe demo**. It uses generic branding, synthetic data, and demo-only identities. It contains no customer data, employee data, internal URLs, credentials, or company-specific deployment details.
 
 ## What it demonstrates
 
@@ -185,7 +185,7 @@ SMTP and outbound webhooks are optional for the public demo.
 
 ## Railway deployment
 
-The portfolio branch contains `backend/railway.json`. Railway should use `backend` as the service root. Startup runs migrations before starting the application:
+The repository contains `backend/railway.json`. Railway should use `backend` as the service root. Startup runs migrations before starting the application:
 
 ```text
 npm run migrate && npm start
@@ -231,14 +231,14 @@ bugbridge/
 
 ## Security / portfolio boundary
 
-This branch is intentionally separated from the work-integrated deployment branch. Public demonstrations should use only synthetic tickets, synthetic users, and non-sensitive screenshots.
+This public repository is intentionally separated from any work-integrated deployment. Public demonstrations should use only synthetic tickets, synthetic users, and non-sensitive screenshots.
 
 The local email/password account system is demo/test infrastructure rather than a claim of production identity architecture. The code keeps authentication behind a replaceable identity-provider boundary so a real deployment can use an organization's existing SSO or trusted gateway instead.
 
 ## Current release
 
-**v0.6.7 portfolio release candidate**
+**v0.6.7 portfolio release**
 
 Implemented foundations include employee reporting, shared PostgreSQL ticketing, six-state QA workflow, assignment, profiles, access control, invitation-only demo accounts, persisted activity, signed webhooks, Docker, OpenAPI, automated smoke coverage, synthetic demo data, and Railway deployment configuration.
 
-The immediate release goal is deployment validation, feature-based internal test execution, cloud QA, and portfolio screenshots before tagging the first portfolio demo release.
+Validation includes automated smoke coverage, a feature-based manual test pass, dependency auditing, and portfolio-safety checks.
