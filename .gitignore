@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Local development
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Temporary / generated files
+*.tmp
+*.temp
+screenshots/
+uploads/

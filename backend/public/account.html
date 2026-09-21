@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Account · BugBridge</title>
+  <link rel="stylesheet" href="/account.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/logo.svg" alt="BugBridge logo" />
+      <div>
+        <p class="eyebrow">QUALITY ENGINEERING</p>
+        <h1>My Account</h1>
+        <p>BugBridge profile, access, and login information.</p>
+      </div>
+    </div>
+    <div class="topActions">
+      <span id="currentUser" class="userChip">Loading identity…</span>
+      <a class="secondary" href="/">Back to dashboard</a>
+      <a id="manageAccessLink" class="secondary hidden" href="/access.html">Manage access</a>
+      <button id="logoutBtn" class="secondary hidden" type="button">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="accessDenied" class="panel denied hidden">
+      <h2>BugBridge access required</h2>
+      <p id="accessDeniedMessage"></p>
+    </section>
+
+    <div id="accountContent" class="hidden">
+      <section class="panel">
+        <div class="sectionHead">
+          <div>
+            <p class="eyebrow">PROFILE</p>
+            <h2>Account details</h2>
+            <p>Your email and BugBridge role are access-control fields. You can manage your display name and job title here.</p>
+          </div>
+          <span id="accessBadge" class="activeBadge">Active</span>
+        </div>
+
+        <div class="infoGrid">
+          <div class="infoCard"><span>Email</span><strong id="accountEmail">—</strong></div>
+          <div class="infoCard"><span>BugBridge role</span><strong id="accountRole">—</strong></div>
+          <div class="infoCard"><span>Identity source</span><strong id="identitySource">—</strong></div>
+          <div class="infoCard"><span>Access granted</span><strong id="accessCreated">—</strong></div>
+        </div>
+
+        <form id="profileForm" class="profileForm">
+          <label>
+            <span>Display name</span>
+            <input id="displayName" type="text" maxlength="120" autocomplete="name" required />
+            <small>This name appears on internal notes and assignment lists.</small>
+          </label>
+          <label>
+            <span>Job title</span>
+            <input id="jobTitle" type="text" maxlength="160" placeholder="Example: QA Analyst" />
+            <small>Optional. Helps other reviewers know each person's role.</small>
+          </label>
+          <button id="saveProfileBtn" class="primary" type="submit">Save profile</button>
+          <p id="profileStatus" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section id="passwordPanel" class="panel hidden">
+        <p class="eyebrow">PASSWORD</p>
+        <h2>Change password</h2>
+        <p class="panelCopy">This password exists only in the local account demo mode. A production identity integration can disable local passwords entirely.</p>
+        <form id="passwordForm" class="passwordForm">
+          <label>
+            <span>Current password</span>
+            <input id="currentPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <label>
+            <span>New password</span>
+            <input id="newPassword" type="password" minlength="10" autocomplete="new-password" required />
+          </label>
+          <label>
+            <span>Confirm new password</span>
+            <input id="confirmPassword" type="password" minlength="10" autocomplete="new-password" required />
+          </label>
+          <button id="changePasswordBtn" class="primary" type="submit">Change password</button>
+          <p id="passwordStatus" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel readOnlyPanel">
+        <p class="eyebrow">ACCESS</p>
+        <h2>Managed by BugBridge Admins</h2>
+        <p>Your login email and Reviewer/Admin role cannot be changed from this page. Admins control access separately.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="/account.js"></script>
+</body>
+</html>

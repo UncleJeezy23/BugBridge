@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log in · BugBridge</title>
+  <link rel="stylesheet" href="/auth.css" />
+</head>
+<body>
+  <main class="authShell">
+    <section class="authCard">
+      <div class="brand">
+        <img src="/logo.svg" alt="BugBridge logo" />
+        <div>
+          <p class="eyebrow">BUGBRIDGE</p>
+          <h1>Log in</h1>
+          <p class="subtitle">Use the account created from your BugBridge invitation.</p>
+        </div>
+      </div>
+
+      <form id="loginForm" class="form">
+        <label>
+          <span>Email</span>
+          <input id="email" type="email" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="password" type="password" autocomplete="current-password" required />
+        </label>
+        <button id="loginBtn" class="primary" type="submit">Log in</button>
+        <p id="status" class="status" aria-live="polite"></p>
+      </form>
+
+      <p class="help">Accounts are invitation-only. An Admin must add your email to the access list before you can activate an account.</p>
+    </section>
+  </main>
+  <script src="/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Activate account · BugBridge</title>
+  <link rel="stylesheet" href="/auth.css" />
+</head>
+<body>
+  <main class="authShell">
+    <section class="authCard">
+      <div class="brand">
+        <img src="/logo.svg" alt="BugBridge logo" />
+        <div>
+          <p class="eyebrow">BUGBRIDGE</p>
+          <h1>Activate your account</h1>
+          <p class="subtitle">Confirm your profile and create the password you will use for this demo environment.</p>
+        </div>
+      </div>
+
+      <div id="invitePreview" class="accountPreview hidden">
+        <strong id="inviteEmail"></strong>
+        <span id="inviteRole"></span>
+      </div>
+
+      <form id="activateForm" class="form hidden">
+        <label>
+          <span>Display name</span>
+          <input id="displayName" type="text" maxlength="120" autocomplete="name" required />
+        </label>
+        <label>
+          <span>Job title</span>
+          <input id="jobTitle" type="text" maxlength="160" placeholder="Example: Software Developer" />
+        </label>
+        <label>
+          <span>Create password</span>
+          <input id="password" type="password" minlength="10" autocomplete="new-password" required />
+        </label>
+        <label>
+          <span>Confirm password</span>
+          <input id="confirmPassword" type="password" minlength="10" autocomplete="new-password" required />
+        </label>
+        <button id="activateBtn" class="primary" type="submit">Activate account</button>
+      </form>
+
+      <div id="invalidInvite" class="actions hidden">
+        <p class="status error" id="invalidMessage">This invitation is unavailable.</p>
+        <a class="secondary" href="/login.html">Go to login</a>
+      </div>
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="/invite.js"></script>
+</body>
+</html>

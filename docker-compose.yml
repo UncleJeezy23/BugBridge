@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bugbridge
+      POSTGRES_USER: bugbridge
+      POSTGRES_PASSWORD: bugbridge
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bugbridge -d bugbridge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - bugbridge_postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  webhook-receiver:
+    build:
+      context: ./backend
+    command: ["node", "src/webhook-receiver.js"]
+    ports:
+      - "9797:9797"
+    environment:
+      WEBHOOK_RECEIVER_PORT: 9797
+      WEBHOOK_SECRET: bugbridge-demo-secret
+    restart: unless-stopped
+
+  bugbridge:
+    build:
+      context: ./backend
+    ports:
+      - "8787:8787"
+    environment:
+      PORT: 8787
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8787}
+      STORAGE_ROOT: /data
+      DATABASE_URL: postgresql://bugbridge:bugbridge@postgres:5432/bugbridge
+      DATABASE_SSL: "false"
+      WEBHOOK_URL: http://webhook-receiver:9797/events
+      WEBHOOK_SECRET: bugbridge-demo-secret
+      WEBHOOK_TIMEOUT_MS: 5000
+      WEBHOOK_EVENTS: report.created,report.status_changed,report.note_added,report.assignee_changed
+
+      # PORTFOLIO DEMO AUTH. Uses synthetic accounts only.
+      IDENTITY_MODE: local_account
+      ALLOWED_IDENTITY_DOMAIN: example.com
+      ENFORCE_IDENTITY_DOMAIN: "false"
+      LOCAL_AUTH_SESSION_HOURS: 12
+      LOCAL_AUTH_INVITE_HOURS: 48
+      LOCAL_AUTH_SECURE_COOKIE: "false"
+
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+      BOOTSTRAP_ADMIN_NAME: Portfolio Demo Admin
+      LOCAL_AUTH_BOOTSTRAP_PASSWORD: ${LOCAL_AUTH_BOOTSTRAP_PASSWORD:-}
+
+      # Optional invitation/report email delivery. Keep secrets in local .env only.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: "${SMTP_FROM:-BugBridge <noreply@example.com>}"
+      REPORT_RECIPIENT_EMAIL: ${REPORT_RECIPIENT_EMAIL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      webhook-receiver:
+        condition: service_started
+    command: ["sh", "-c", "npm run migrate && npm start"]
+    volumes:
+      - bugbridge_files:/data
+    restart: unless-stopped
+
+volumes:
+  bugbridge_postgres:
+  bugbridge_files:

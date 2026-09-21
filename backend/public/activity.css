@@ -1,0 +1,26 @@
+.activitySection { display: grid; gap: 12px; }
+.activityTimeline { display: grid; position: relative; }
+.activityEmpty, .activityError { margin: 0; padding: 16px; border: 1px dashed #d9dde2; border-radius: 10px; color: #7a828c; font-size: 11px; text-align: center; }
+.activityError { border-color: #fecaca; color: #991b1b; background: #fffafa; }
+.activityItem { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; position: relative; padding: 0 0 16px; }
+.activityItem:last-child { padding-bottom: 0; }
+.activityRail { position: relative; display: flex; justify-content: center; }
+.activityRail::after { content: ""; position: absolute; top: 14px; bottom: -2px; width: 1px; background: #e1e4e8; }
+.activityItem:last-child .activityRail::after { display: none; }
+.activityDot { position: relative; z-index: 1; width: 9px; height: 9px; margin-top: 4px; border-radius: 50%; background: #fff; border: 2px solid #6b7280; }
+.activityItem[data-type="report.created"] .activityDot { border-color: #16a34a; }
+.activityItem[data-type="report.status_changed"] .activityDot { border-color: #2563eb; }
+.activityItem[data-type="report.assignee_changed"] .activityDot { border-color: #e5242a; }
+.activityItem[data-type="report.note_added"] .activityDot { border-color: #7c3aed; }
+.activityCard { min-width: 0; border: 1px solid #e4e7eb; border-radius: 10px; padding: 10px 12px; background: #fafbfc; }
+.activityHead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.activityHead strong { font-size: 11px; color: #262a2f; }
+.activityHead time { flex: 0 0 auto; color: #7a828c; font-size: 10px; }
+.activityDetail { margin: 5px 0 0; color: #5f6770; font-size: 11px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.activityActor { margin: 5px 0 0; color: #8a919a; font-size: 10px; }
+.activityHistorical { display: inline-flex; margin-left: 6px; border: 1px solid #e0e3e7; border-radius: 999px; padding: 2px 6px; color: #7a828c; background: #fff; font-size: 9px; font-weight: 700; vertical-align: 1px; }
+
+@media (max-width: 520px) {
+  .activityHead { flex-direction: column; gap: 3px; }
+  .activityHead time { flex-basis: auto; }
+}

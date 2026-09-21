@@ -1,0 +1,24 @@
+{
+  "name": "bugbridge-backend",
+  "version": "0.6.7",
+  "private": true,
+  "description": "Portable backend API and shared ticket dashboard for BugBridge",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/migrate.js",
+    "start": "node src/server.js",
+    "smoke": "node scripts/smoke-test.js",
+    "seed:demo": "node scripts/seed-demo.js",
+    "webhook:receiver": "node src/webhook-receiver.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^10.0.10",
+    "pg": "^8.13.1",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

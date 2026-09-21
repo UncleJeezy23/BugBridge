@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">BugBridge logo</title>
+  <rect width="128" height="128" rx="28" fill="#111827"/>
+  <circle cx="64" cy="64" r="34" fill="none" stroke="#ffffff" stroke-width="8"/>
+  <path d="M46 65l12 12 25-28" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M27 32h18M83 96h18" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+</svg>

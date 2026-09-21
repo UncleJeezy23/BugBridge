@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BugBridge Settings</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <main class="settingsCard">
+    <div class="brandRow">
+      <img src="logo.svg" alt="BugBridge logo" />
+      <div>
+        <p class="eyebrow">BUGBRIDGE</p>
+        <h1>Connection settings</h1>
+      </div>
+    </div>
+
+    <p class="intro">Choose which BugBridge backend this extension sends reports to. Use localhost for development, a demo URL for presentations, or a company-approved API host for deployment.</p>
+
+    <label>
+      <span>Backend base URL</span>
+      <input id="apiBaseUrl" type="url" placeholder="http://localhost:8787" spellcheck="false" />
+    </label>
+    <p class="hint">Enter only the server address, without <code>/api/v1/reports</code>.</p>
+
+    <div class="actions">
+      <button id="saveBtn" class="primary" type="button">Save connection</button>
+      <button id="resetBtn" class="secondary" type="button">Use localhost</button>
+    </div>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </main>
+
+  <script src="options.js"></script>
+</body>
+</html>

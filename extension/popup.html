@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BugBridge</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="brandCopy">
+        <p class="eyebrow">BUGBRIDGE</p>
+        <h1>Report an issue</h1>
+        <p class="subtitle">A few seconds from you. Better context for the development team.</p>
+      </div>
+      <div class="headerRight">
+        <img class="brandLogo" src="logo.svg" alt="BugBridge logo" />
+        <span class="badge" id="captureStatus">No screenshot</span>
+      </div>
+    </header>
+
+    <form id="reportForm" novalidate>
+      <label class="field">
+        <span>Type</span>
+        <select id="issueType">
+          <option value="Bug">Bug</option>
+          <option value="Suggestion">Suggestion</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>What were you trying to do?</span>
+        <textarea id="intent" rows="2" maxlength="500" placeholder="Example: Submit a request"></textarea>
+      </label>
+
+      <label class="field">
+        <span id="problemLabel">What went wrong?</span>
+        <textarea id="problem" rows="3" maxlength="1000" placeholder="Example: Clicking Save did nothing"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Impact</span>
+        <select id="impact">
+          <option value="Minor issue">Minor issue</option>
+          <option value="Makes work difficult">Makes work difficult</option>
+          <option value="Can't continue">Can't continue</option>
+        </select>
+      </label>
+
+      <section class="environment" aria-label="Automatically captured developer information">
+        <div class="sectionTitle">
+          <span>Dev capture info</span>
+          <span class="muted" id="envStatus">Loading…</span>
+        </div>
+        <dl>
+          <div><dt>Page</dt><dd id="pageTitle">—</dd></div>
+          <div class="urlRow"><dt>Full URL</dt><dd id="pageUrl">—</dd></div>
+          <div><dt>Browser</dt><dd id="browser">—</dd></div>
+          <div><dt>OS</dt><dd id="os">—</dd></div>
+          <div><dt>Viewport</dt><dd id="viewport">—</dd></div>
+        </dl>
+        <div class="sectionTitle">
+          <span class="muted" id="connectionLabel">Backend: loading…</span>
+          <button type="button" class="textButton" id="settingsBtn">Connection settings</button>
+        </div>
+      </section>
+
+      <div class="actions stackedActions">
+        <button type="button" class="secondary" id="captureBtn">Capture screenshot</button>
+        <button type="submit" class="primary" id="submitBtn">Submit Report</button>
+      </div>
+
+      <p class="error" id="formError" role="alert" aria-live="polite"></p>
+      <p class="successText" id="submitStatus" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="screenshotPanel hidden" id="screenshotPanel">
+      <div class="sectionTitle">
+        <span>Screenshot preview</span>
+        <button type="button" class="textButton" id="retakeBtn">Retake</button>
+      </div>
+      <img id="screenshotPreview" alt="Captured browser tab preview" />
+    </section>
+
+    <section class="reportPanel hidden" id="reportPanel">
+      <div class="sectionTitle reportTitleRow">
+        <span>Submitted developer report</span>
+        <button type="button" class="badge success copyIdBadge" id="reportIdBadge" title="Click to copy ticket ID" aria-label="Copy ticket ID">Submitted</button>
+      </div>
+      <p class="ticketHint" id="ticketHint">Click the ticket ID to copy it.</p>
+      <pre id="reportOutput" tabindex="0" aria-label="Submitted developer report details"></pre>
+      <div class="actions stackedActions">
+        <button type="button" class="secondary" id="copyBtn">Copy report</button>
+      </div>
+      <p class="successText" id="copyStatus" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

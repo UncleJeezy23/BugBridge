@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BugBridge</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/activity.css" />
+  <link rel="stylesheet" href="/expanded-workflow.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brandHeader">
+      <img class="brandLogo" src="/logo.svg" alt="BugBridge logo" />
+      <div>
+        <p class="eyebrow">QUALITY ENGINEERING</p>
+        <h1>BugBridge</h1>
+        <p class="subtitle">Bug reports and improvement suggestions from internal users.</p>
+      </div>
+    </div>
+    <div class="topbarActions">
+      <span id="viewerIdentity" class="viewerIdentity" hidden></span>
+      <a id="accountLink" class="secondaryLink" href="/account.html" hidden>My account</a>
+      <a id="accessLink" class="secondaryLink" href="/access.html" hidden>Manage access</a>
+      <button id="logoutBtn" class="secondaryLink" type="button" hidden>Log out</button>
+      <div class="health" id="health"><span class="dot"></span><span>Connecting…</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary" aria-label="Ticket summary">
+      <button class="stat active" data-filter="All" type="button"><strong id="countAll">0</strong><span>All</span></button>
+      <button class="stat" data-filter="Open" type="button"><strong id="countOpen">0</strong><span>Open</span></button>
+      <button class="stat" data-filter="Needs Info" type="button"><strong id="countNeedsInfo">0</strong><span>Needs info</span></button>
+      <button class="stat" data-filter="In Review" type="button"><strong id="countReview">0</strong><span>In review</span></button>
+      <button class="stat" data-filter="In Development" type="button"><strong id="countDevelopment">0</strong><span>In development</span></button>
+      <button class="stat" data-filter="Ready for Retest" type="button"><strong id="countRetest">0</strong><span>Ready for retest</span></button>
+      <button class="stat" data-filter="Resolved" type="button"><strong id="countResolved">0</strong><span>Resolved</span></button>
+    </section>
+
+    <section class="workflowBar" aria-label="Assignment workflow">
+      <div class="workflowCopy">
+        <strong>Work queue</strong>
+        <span id="workflowLabel">All tickets</span>
+      </div>
+      <div class="workflowActions">
+        <button id="allQueueBtn" class="workflowButton active" type="button">All queue</button>
+        <button id="myTicketsBtn" class="workflowButton" type="button">My tickets</button>
+        <button id="unassignedQueueBtn" class="workflowButton" type="button">Unassigned queue</button>
+        <button id="needsRetestBtn" class="workflowButton" type="button">Needs retest</button>
+      </div>
+    </section>
+
+    <section class="filterPanel" aria-label="Ticket search and filters">
+      <label class="searchField">
+        <span>Search tickets</span>
+        <input id="searchInput" type="search" placeholder="Search BUG ID, issue, page, URL, assignee, or note…" autocomplete="off" />
+      </label>
+      <div class="filterGrid">
+        <label>
+          <span>Type</span>
+          <select id="typeFilter">
+            <option value="All">All types</option>
+            <option value="Bug">Bug</option>
+            <option value="Suggestion">Suggestion</option>
+          </select>
+        </label>
+        <label>
+          <span>Impact</span>
+          <select id="impactFilter">
+            <option value="All">All impact</option>
+            <option value="Minor issue">Minor issue</option>
+            <option value="Makes work difficult">Makes work difficult</option>
+            <option value="Can't continue">Can't continue</option>
+          </select>
+        </label>
+        <label>
+          <span>Assignee</span>
+          <select id="assigneeFilter">
+            <option value="All">All assignees</option>
+            <option value="Unassigned">Unassigned</option>
+          </select>
+        </label>
+        <label>
+          <span>From date</span>
+          <input id="dateFrom" type="date" />
+        </label>
+        <label>
+          <span>To date</span>
+          <input id="dateTo" type="date" />
+        </label>
+        <label>
+          <span>Order</span>
+          <select id="sortOrder">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+        <div class="filterAction">
+          <span>&nbsp;</span>
+          <button id="clearFiltersBtn" class="secondary" type="button">Clear filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="ticketPane">
+        <div class="paneHeader">
+          <div>
+            <h2>Tickets</h2>
+            <p id="ticketCountLabel">Loading…</p>
+          </div>
+          <button id="refreshBtn" class="secondary" type="button">Refresh</button>
+        </div>
+        <div id="ticketList" class="ticketList" aria-live="polite"></div>
+      </aside>
+
+      <article class="detailPane" id="detailPane">
+        <div class="emptyState" id="emptyState">
+          <div class="emptyMark">BB</div>
+          <h2>Select a ticket</h2>
+          <p>Choose a report to review its context, screenshot, assignment, activity, notes, and current status.</p>
+        </div>
+
+        <div class="ticketDetail hidden" id="ticketDetail">
+          <div class="detailHeader">
+            <div class="detailTitle">
+              <div class="ticketMetaLine">
+                <button id="copyIdBtn" class="ticketId" type="button" title="Copy ticket ID"></button>
+                <span id="typeBadge" class="tag"></span>
+              </div>
+              <h2 id="detailIntent"></h2>
+              <p id="createdAt" class="muted"></p>
+              <p id="lastActivity" class="muted"></p>
+            </div>
+            <div class="detailActions">
+              <label class="statusControl">
+                <span>Assigned to</span>
+                <select id="assigneeSelect">
+                  <option value="">Unassigned</option>
+                </select>
+              </label>
+              <button id="assignToMeBtn" class="secondary" type="button">Assign to me</button>
+              <label class="statusControl">
+                <span>Status</span>
+                <select id="statusSelect">
+                  <option>Open</option>
+                  <option>Needs Info</option>
+                  <option>In Review</option>
+                  <option>In Development</option>
+                  <option>Ready for Retest</option>
+                  <option>Resolved</option>
+                </select>
+              </label>
+              <button id="copyLinkBtn" class="secondary" type="button">Copy ticket link</button>
+            </div>
+          </div>
+
+          <section class="detailSection">
+            <h3 id="problemHeading">What went wrong</h3>
+            <p id="detailProblem" class="preserve"></p>
+          </section>
+
+          <section class="detailGrid">
+            <div class="infoCard"><span>Impact</span><strong id="detailImpact"></strong></div>
+            <div class="infoCard"><span>Assigned to</span><strong id="detailAssignee"></strong></div>
+            <div class="infoCard"><span>Assigned</span><strong id="detailAssignedAt"></strong></div>
+            <div class="infoCard"><span>Assigned by</span><strong id="detailAssignedBy"></strong></div>
+            <div class="infoCard"><span>Page</span><strong id="detailPage"></strong></div>
+            <div class="infoCard"><span>Browser</span><strong id="detailBrowser"></strong></div>
+            <div class="infoCard"><span>Operating system</span><strong id="detailOs"></strong></div>
+            <div class="infoCard"><span>Viewport</span><strong id="detailViewport"></strong></div>
+            <div class="infoCard"><span>Screen</span><strong id="detailScreen"></strong></div>
+          </section>
+
+          <section class="detailSection">
+            <h3>Full page URL</h3>
+            <a id="detailUrl" class="url" target="_blank" rel="noreferrer"></a>
+          </section>
+
+          <section class="detailSection hidden" id="screenshotSection">
+            <div class="sectionRow">
+              <h3>Screenshot</h3>
+              <a id="openScreenshot" target="_blank" rel="noreferrer">Open full size</a>
+            </div>
+            <img id="detailScreenshot" alt="Bug report screenshot" />
+          </section>
+
+          <section class="detailSection activitySection" aria-label="Ticket activity">
+            <div class="sectionRow">
+              <div>
+                <h3>Activity</h3>
+                <p class="sectionHint">Chronological history of ticket workflow changes.</p>
+              </div>
+              <span id="activityCount" class="muted">Loading…</span>
+            </div>
+            <div id="activityList" class="activityTimeline" aria-live="polite">
+              <p class="activityEmpty">Loading ticket activity…</p>
+            </div>
+          </section>
+
+          <section class="detailSection notesSection">
+            <div class="sectionRow">
+              <div>
+                <h3>Internal notes</h3>
+                <p class="sectionHint">Visible only in the BugBridge dashboard.</p>
+              </div>
+              <span id="noteCount" class="muted"></span>
+            </div>
+            <div id="notesList" class="notesList"></div>
+            <form id="noteForm" class="noteComposer">
+              <label>
+                <span>Your name</span>
+                <input id="noteAuthor" type="text" maxlength="120" autocomplete="name" placeholder="Name" />
+              </label>
+              <label>
+                <span>Add note</span>
+                <textarea id="noteText" rows="3" maxlength="4000" placeholder="Troubleshooting result, follow-up, developer context…"></textarea>
+              </label>
+              <button id="addNoteBtn" class="primary" type="submit">Add internal note</button>
+              <p id="noteStatus" class="actionStatus" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <p id="detailStatus" class="actionStatus" aria-live="polite"></p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script src="/expanded-workflow.js"></script>
+  <script src="/activity.js"></script>
+  <script src="/session.js"></script>
+</body>
+</html>

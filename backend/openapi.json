@@ -1,0 +1,386 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BugBridge API",
+    "version": "0.6.7",
+    "description": "Portable REST API for BugBridge. v0.6.7 includes the six-state QA workflow, persisted per-ticket activity history, Reviewer/Admin authorization, invitation-only local account testing, assignment, profiles, and signed outbound webhooks."
+  },
+  "servers": [
+    { "url": "/", "description": "Current host" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Service health",
+        "responses": {
+          "200": { "description": "Healthy service" },
+          "503": { "description": "Storage unavailable" }
+        }
+      }
+    },
+    "/api/v1/auth/config": {
+      "get": {
+        "summary": "Get active identity/auth configuration",
+        "responses": { "200": { "description": "Auth configuration" } }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Log in with a local test account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Log out current local-account session",
+        "responses": { "200": { "description": "Logged out" } }
+      }
+    },
+    "/api/v1/auth/invite/{token}": {
+      "get": {
+        "summary": "Inspect one-time account invitation",
+        "parameters": [{ "$ref": "#/components/parameters/InviteToken" }],
+        "responses": {
+          "200": { "description": "Invitation details" },
+          "404": { "description": "Invitation not found" }
+        }
+      }
+    },
+    "/api/v1/auth/invite/{token}/accept": {
+      "post": {
+        "summary": "Activate an invited local test account",
+        "parameters": [{ "$ref": "#/components/parameters/InviteToken" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["displayName", "password"],
+                "properties": {
+                  "displayName": { "type": "string", "maxLength": 120 },
+                  "jobTitle": { "type": "string", "maxLength": 160 },
+                  "password": { "type": "string", "minLength": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Account activated" },
+          "400": { "description": "Invalid, expired, or previously used invitation" }
+        }
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "summary": "Resolve current identity and dashboard authorization",
+        "responses": {
+          "200": { "description": "Current session" },
+          "401": { "description": "Login required" }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "summary": "Get current dashboard account",
+        "responses": {
+          "200": { "description": "Current account" },
+          "403": { "description": "Dashboard access required" }
+        }
+      },
+      "patch": {
+        "summary": "Update own display name and job title",
+        "description": "Email and Reviewer/Admin role cannot be changed through this endpoint.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["displayName"],
+                "properties": {
+                  "displayName": { "type": "string", "maxLength": 120 },
+                  "jobTitle": { "type": "string", "maxLength": 160 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Profile updated" } }
+      }
+    },
+    "/api/v1/me/password": {
+      "patch": {
+        "summary": "Change local test-account password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["currentPassword", "newPassword"],
+                "properties": {
+                  "currentPassword": { "type": "string" },
+                  "newPassword": { "type": "string", "minLength": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Password changed" } }
+      }
+    },
+    "/api/v1/collaborators": {
+      "get": {
+        "summary": "List active Reviewers/Admins available for assignment",
+        "responses": { "200": { "description": "Assignable users" } }
+      }
+    },
+    "/api/v1/access": {
+      "get": {
+        "summary": "List dashboard access entries",
+        "description": "Admin only.",
+        "responses": { "200": { "description": "Access list" } }
+      },
+      "post": {
+        "summary": "Grant dashboard access and create local invitation when enabled",
+        "description": "Admin only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "role"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "displayName": { "type": "string", "maxLength": 120 },
+                  "jobTitle": { "type": "string", "maxLength": 160 },
+                  "role": { "type": "string", "enum": ["Reviewer", "Admin"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Access granted" } }
+      }
+    },
+    "/api/v1/access/{email}": {
+      "patch": {
+        "summary": "Update a user's dashboard access",
+        "description": "Admin only. The final active Admin cannot be demoted.",
+        "parameters": [{ "$ref": "#/components/parameters/Email" }],
+        "responses": { "200": { "description": "Access updated" } }
+      },
+      "delete": {
+        "summary": "Revoke dashboard access",
+        "description": "Admin only. The final active Admin cannot be removed.",
+        "parameters": [{ "$ref": "#/components/parameters/Email" }],
+        "responses": { "200": { "description": "Access revoked" } }
+      }
+    },
+    "/api/v1/access/{email}/invite": {
+      "post": {
+        "summary": "Create or resend a local-account invitation",
+        "description": "Admin only; local_account mode only.",
+        "parameters": [{ "$ref": "#/components/parameters/Email" }],
+        "responses": { "201": { "description": "Invitation created" } }
+      }
+    },
+    "/api/v1/audit": {
+      "get": {
+        "summary": "List access/profile/account audit events",
+        "description": "Admin only.",
+        "responses": { "200": { "description": "Audit history" } }
+      }
+    },
+    "/api/v1/reports": {
+      "get": {
+        "summary": "List tickets",
+        "description": "Reviewer/Admin access required.",
+        "responses": { "200": { "description": "Ticket collection" } }
+      },
+      "post": {
+        "summary": "Submit a Bug or Suggestion",
+        "description": "Employee-facing endpoint intentionally separate from Reviewer/Admin authorization.",
+        "responses": { "201": { "description": "Ticket created" } }
+      }
+    },
+    "/api/v1/reports/{id}": {
+      "get": {
+        "summary": "Get one ticket",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "responses": {
+          "200": { "description": "Ticket" },
+          "404": { "description": "Ticket not found" }
+        }
+      }
+    },
+    "/api/v1/reports/{id}/activity": {
+      "get": {
+        "summary": "Get chronological persisted ticket activity",
+        "description": "Returns creation, status, assignment, and internal-note history. Legacy-reconstructed entries are marked with metadata.backfilled=true.",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "responses": {
+          "200": {
+            "description": "Ticket activity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "reportId": { "type": "string" },
+                    "events": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ActivityEvent" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Ticket not found" }
+        }
+      }
+    },
+    "/api/v1/reports/{id}/screenshot": {
+      "get": {
+        "summary": "Get ticket screenshot",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "responses": {
+          "200": { "description": "Screenshot image" },
+          "404": { "description": "Screenshot not found" }
+        }
+      }
+    },
+    "/api/v1/reports/{id}/status": {
+      "patch": {
+        "summary": "Update ticket status",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["Open", "Needs Info", "In Review", "In Development", "Ready for Retest", "Resolved"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Status updated" } }
+      }
+    },
+    "/api/v1/reports/{id}/assignee": {
+      "patch": {
+        "summary": "Assign, transfer, or unassign a ticket",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "assigneeEmail": { "type": ["string", "null"], "format": "email" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Assignment updated" } }
+      }
+    },
+    "/api/v1/reports/{id}/notes": {
+      "post": {
+        "summary": "Add an internal note",
+        "parameters": [{ "$ref": "#/components/parameters/ReportId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "author": { "type": "string", "maxLength": 120 },
+                  "text": { "type": "string", "maxLength": 4000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Note added" } }
+      }
+    }
+  },
+  "webhooks": {
+    "reportCreated": { "post": { "summary": "report.created", "responses": { "2XX": { "description": "Event accepted" } } } },
+    "reportStatusChanged": { "post": { "summary": "report.status_changed", "responses": { "2XX": { "description": "Event accepted" } } } },
+    "reportNoteAdded": { "post": { "summary": "report.note_added", "responses": { "2XX": { "description": "Event accepted" } } } },
+    "reportAssigneeChanged": { "post": { "summary": "report.assignee_changed", "responses": { "2XX": { "description": "Event accepted" } } } }
+  },
+  "components": {
+    "parameters": {
+      "ReportId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "example": "BUG-20260901-5D5011" }
+      },
+      "InviteToken": {
+        "name": "token",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" }
+      },
+      "Email": {
+        "name": "email",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "format": "email" }
+      }
+    },
+    "schemas": {
+      "ActivityEvent": {
+        "type": "object",
+        "required": ["id", "reportId", "type", "metadata", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "reportId": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["report.created", "report.status_changed", "report.assignee_changed", "report.note_added"]
+          },
+          "actorEmail": { "type": ["string", "null"], "format": "email" },
+          "actorName": { "type": ["string", "null"] },
+          "metadata": { "type": "object", "additionalProperties": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
