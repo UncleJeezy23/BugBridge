@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { createScreenshotStore } from './screenshots.js';
 import { createRepository } from './repository.js';
 import { createWebhookDispatcher } from './webhook.js';
 import { createAccessService, createIdentityProvider, companyEmailAllowed, identityDomainEnforced } from './access.js';
@@ -29,6 +30,11 @@ await fs.mkdir(dataDir, { recursive: true });
 await fs.mkdir(uploadDir, { recursive: true });
 await fs.mkdir(publicDir, { recursive: true });
 
+if (process.env.REQUIRE_PERSISTENT_STORAGE === 'true' &&
+    (!process.env.DATABASE_URL?.trim() || process.env.SCREENSHOT_STORAGE !== 'r2' || process.env.IDENTITY_MODE !== 'local_account')) {
+  throw new Error('Hosted trial requires DATABASE_URL, SCREENSHOT_STORAGE=r2 and IDENTITY_MODE=local_account.');
+}
+const screenshots = createScreenshotStore({ uploadDir });
 const repository = createRepository({ reportLogPath });
 const accessService = createAccessService();
 const identityProvider = createIdentityProvider();
@@ -72,7 +78,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument, {
 app.get('/api/openapi.json', (_req, res) => res.json(openApiDocument));
 
 const upload = multer({
-  dest: uploadDir,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') return cb(null, true);
@@ -262,7 +268,7 @@ async function maybeSendEmail(report, screenshot) {
   if (!transporter || !recipient) return { sent: false, reason: 'SMTP not configured' };
 
   const attachments = screenshot
-    ? [{ filename: screenshot.originalname || `${report.id}.png`, path: screenshot.path }]
+    ? [{ filename: screenshot.originalname || `${report.id}.png`, content: screenshot.buffer, contentType: screenshot.mimetype }]
     : [];
 
   await transporter.sendMail({
@@ -329,6 +335,7 @@ app.get('/health', async (_req, res) => {
       service: 'bugbridge-backend',
       version: '0.6.7',
       ticketStorage: repository.kind,
+      screenshotStorage: screenshots.kind,
       webhooks: webhooks.enabled ? 'configured' : 'disabled',
       identityMode: identityProvider.mode,
       accessStore: accessService.kind,
@@ -342,6 +349,7 @@ app.get('/health', async (_req, res) => {
       service: 'bugbridge-backend',
       version: '0.6.7',
       ticketStorage: repository.kind,
+      screenshotStorage: screenshots.kind,
       webhooks: webhooks.enabled ? 'configured' : 'disabled',
       identityMode: identityProvider.mode,
       accessStore: accessService.kind,
@@ -624,12 +632,13 @@ app.get(['/api/reports/:id/screenshot', '/api/v1/reports/:id/screenshot'], attac
       return res.status(404).json({ error: 'Screenshot not found.' });
     }
 
-    const safeName = path.basename(report.screenshotFilename);
-    const screenshotPath = path.join(uploadDir, safeName);
-    await fs.access(screenshotPath);
-    res.sendFile(screenshotPath);
+    const image = await screenshots.read(report.screenshotFilename);
+    res.set('Cache-Control', 'private, no-store');
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.type(image[0] === 0xff && image[1] === 0xd8 ? 'image/jpeg' : 'image/png');
+    res.send(image);
   } catch (error) {
-    if (error.code === 'ENOENT') return res.status(404).json({ error: 'Screenshot not found.' });
+    if (error.code === 'ENOENT' || error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) return res.status(404).json({ error: 'Screenshot not found.' });
     next(error);
   }
 });
@@ -737,6 +746,8 @@ app.post(['/api/reports/:id/notes', '/api/v1/reports/:id/notes'], attachIdentity
 
 // Employee reporting intentionally remains separate from reviewer/admin dashboard authorization.
 app.post(['/api/reports', '/api/v1/reports'], upload.single('screenshot'), async (req, res, next) => {
+  let screenshotKey;
+  let reportSaved = false;
   try {
     const type = normalizeType(req.body.type);
     if (!type) return res.status(400).json({ error: 'type must be Bug or Suggestion' });
@@ -744,6 +755,7 @@ app.post(['/api/reports', '/api/v1/reports'], upload.single('screenshot'), async
     if (!requiredText(req.body.problem, 4000)) return res.status(400).json({ error: 'problem is required' });
     if (!requiredText(req.body.impact, 200)) return res.status(400).json({ error: 'impact is required' });
 
+    if (req.file) screenshotKey = await screenshots.save(req.file);
     const now = new Date().toISOString();
     const report = {
       id: createReportId(),
@@ -760,7 +772,7 @@ app.post(['/api/reports', '/api/v1/reports'], upload.single('screenshot'), async
       screen: req.body.screen?.trim() || '',
       clientTimestamp: req.body.clientTimestamp?.trim() || '',
       screenshotStored: Boolean(req.file),
-      screenshotFilename: req.file?.filename || null,
+      screenshotFilename: screenshotKey || null,
       assignedToEmail: null,
       assignedTo: null,
       assignedAt: null,
@@ -775,6 +787,7 @@ app.post(['/api/reports', '/api/v1/reports'], upload.single('screenshot'), async
       actor: { email: null, name: 'Employee reporter' }
     });
 
+    reportSaved = true;
     let email = { sent: false, reason: 'Not attempted' };
     try {
       email = await maybeSendEmail(created, req.file);
@@ -798,6 +811,9 @@ app.post(['/api/reports', '/api/v1/reports'], upload.single('screenshot'), async
       report: webhookReport(created)
     });
   } catch (error) {
+    if (screenshotKey && !reportSaved) {
+      await screenshots.remove(screenshotKey).catch(() => console.error('Orphan screenshot cleanup failed.'));
+    }
     next(error);
   }
 });
