@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: bugbridge-trial
+    runtime: node
+    plan: free
+    branch: hosting/free-render-r2
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: REQUIRE_PERSISTENT_STORAGE
+        value: "true"
+      - key: SCREENSHOT_STORAGE
+        value: r2
+      - key: IDENTITY_MODE
+        value: local_account
+      - key: ENFORCE_IDENTITY_DOMAIN
+        value: "false"
+      - key: LOCAL_AUTH_SECURE_COOKIE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_NAME
+        value: BugBridge Admin
+      - key: LOCAL_AUTH_BOOTSTRAP_PASSWORD
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
