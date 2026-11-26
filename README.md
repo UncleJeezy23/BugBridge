@@ -113,6 +113,14 @@ Manual release checklist:
 tests/INTERNAL_FEATURE_TEST_PASS.md
 ```
 
+Automated regression suite (Playwright + TypeScript, runs on every pull request in GitHub Actions). It covers the REST API, authentication and access control, the six-state workflow, signed webhooks, and the reviewer dashboard UI. See `e2e/README.md`.
+
+```bash
+cd e2e
+npm install && npx playwright install chromium
+DATABASE_URL=postgresql://bugbridge:bugbridge@localhost:5432/bugbridge npx playwright test
+```
+
 Automated deployment smoke coverage:
 
 ```bash
@@ -210,6 +218,7 @@ bugbridge/
 │   ├── scripts/
 │   └── src/
 ├── docs/
+├── e2e/            # Playwright API + UI regression suite
 ├── tests/
 ├── docker-compose.yml
 └── README.md

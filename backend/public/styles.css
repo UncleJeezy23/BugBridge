@@ -93,6 +93,7 @@ main { padding: 22px 34px 36px; }
 .emptyState h2 { margin: 0; color: #23262a; font-size: 19px; }
 .emptyState p { margin: 7px 0 0; max-width: 330px; font-size: 12px; line-height: 1.5; }
 .hidden { display: none !important; }
+[hidden] { display: none !important; }
 .ticketDetail { display: grid; gap: 20px; }
 .detailHeader { display: flex; justify-content: space-between; gap: 22px; align-items: flex-start; padding-bottom: 18px; border-bottom: 1px solid #e7e9ed; }
 .detailTitle { min-width: 0; }
